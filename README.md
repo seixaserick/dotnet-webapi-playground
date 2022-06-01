@@ -74,6 +74,8 @@ docker run -it -p 1977:80 --name=dotnet-webapi-playground --restart=always dotne
 
 ![Docker Running](./wwwroot/img/docker-desktop.png "Docker Desktop Running")
 
+Open: [http://localhost:1977/square/8](http://localhost:1977/square/8)  (without https)
+
 
 To stop the container, run command line below: 
 ```

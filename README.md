@@ -7,7 +7,7 @@ Many times we need to publish RESTful microservices, well documented and deploye
 
 This playground project shows many features that you can reuse in your projects.
 
-It's a live project and probably will be often updated.
+It is a live project and will likely be updated frequently.
 
 
 # What does this application do?

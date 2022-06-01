@@ -12,6 +12,10 @@ builder.Services.AddSwaggerGen(options =>
                 options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
             });
 
+//builder.Services.AddDistributedMemoryCache();
+builder.Services.AddCors();
+builder.Services.AddResponseCompression(opt => { opt.EnableForHttps = true; });
+
 
 
 var app = builder.Build();
@@ -23,10 +27,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
 app.UseHttpsRedirection();
-
+app.UseStaticFiles(); 
+app.UseDefaultFiles();
+app.UseResponseCompression();
+app.UseCors(options => { options.AllowAnyOrigin(); options.AllowAnyHeader(); options.AllowAnyMethod(); });
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

@@ -15,23 +15,22 @@ builder.Services.AddSwaggerGen(options =>
 //builder.Services.AddDistributedMemoryCache();
 builder.Services.AddCors();
 builder.Services.AddResponseCompression(opt => { opt.EnableForHttps = true; });
+//builder.Services.AddHttpsRedirection(opt => { opt.HttpsPort = 443; });
 
 
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
 
 app.UseHttpsRedirection();
-app.UseStaticFiles(); 
-app.UseDefaultFiles();
+app.UseDefaultFiles(); //Must be called before app.UseStaticFiles()
+app.UseStaticFiles();
 app.UseResponseCompression();
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
+
 app.UseCors(options => { options.AllowAnyOrigin(); options.AllowAnyHeader(); options.AllowAnyMethod(); });
 app.UseAuthorization();
 app.MapControllers();

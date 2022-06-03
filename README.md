@@ -21,6 +21,7 @@ It is a live project and will likely be updated frequently.
     - Objects and Json parser
     - Return Codes (HTTP StatusCodes) manipulation
     - Memory Caching
+    - Hashing generation and hash validations
     - Native C# data types extensions / override
 
 
@@ -106,6 +107,8 @@ docker rm --force dotnet-webapi-playground
 - Json Parse is made by dotnet in an easy and lightweight way
 - Docker is a nice tool to run projects quickly without concern about dependencies and configurations.
 - C# is very similar to other ECMA-based languages (Java, Javascript etc.)
+- Hashing algorithms are "one way" only. You can't recover the inputstring from a given hash.
+- Response codes can be easily customized in the API response (example: HTTP 409 Conflict, HTTP 402 PaymentRequired etc.). [See the complete HTTP response codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes).
 - Good Markdown README.md files can help other developers to understand, clone, run and test projects.
 
 # Homework challenge

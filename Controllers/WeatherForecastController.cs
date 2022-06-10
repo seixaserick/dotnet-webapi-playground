@@ -40,7 +40,7 @@ public class WeatherForecastController : ControllerBase
 
 
         //create a ffake Weather forecast List
-        var resultForecast = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        var resultForecast = Enumerable.Range(1, 10).Select(index => new WeatherForecast
         {
             date = DateTime.Now.AddDays(index),
             temperatureC = Random.Shared.Next(-20, 55),

@@ -1,3 +1,5 @@
+using StackExchange.Redis;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -16,6 +18,17 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddCors();
 builder.Services.AddResponseCompression(opt => { opt.EnableForHttps = true; });
 //builder.Services.AddHttpsRedirection(opt => { opt.HttpsPort = 443; });
+
+//builder.Services.AddStackExchangeRedisCache(options =>
+//{
+//    options.Configuration = builder.Configuration.GetConnectionString("MyRedisConStr");
+//    options.InstanceName = "default";
+
+//});
+
+////redis distributed cache service
+var multiplexer = ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("MyRedisConStr"));
+builder.Services.AddSingleton<IConnectionMultiplexer>(multiplexer);
 
 
 

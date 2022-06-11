@@ -67,6 +67,12 @@ docker build -t dotnet-webapi-playground -f Dockerfile .
 ![Docker Build](./wwwroot/img/docker-build.png "Docker Desktop Build process")
 
 
+Setup a Redis server in Docker if you haven't an Redis instance
+```
+ docker run --name redis -d -p 6379:6379 -e REDIS_PASSWORD=supersecretpassword --restart always redis:latest /bin/sh -c 'redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}'
+```
+
+
 To run the image in Docker container and interact with it, run command line below: 
 ```
 docker run -it -p 1977:80 --name=dotnet-webapi-playground --restart=always dotnet-webapi-playground

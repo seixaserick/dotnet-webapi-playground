@@ -241,7 +241,7 @@ public class RedisController : ControllerBase
     /// <returns></returns>
     [HttpGet()]
     [Route("/redis/queues")]
-    public async Task<ActionResult<List<string>>> GetRedisReturnAllQueues(  [FromQuery] int max_qty = 50)
+    public async Task<ActionResult<List<string>>> GetRedisReturnAllQueues(  [FromQuery] int max_qty = 1000)
     {
         bool isRedisOk = _redisService.IsRedisOk();
         if (!isRedisOk)

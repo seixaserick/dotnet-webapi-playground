@@ -180,7 +180,26 @@ namespace Services
         }
 
 
+        public async Task<List<string>> ReturnAllQueues(int maxQty)
+        {
+            var listKeys = new List<string>();
 
+            try
+            {
+                //var redisServer = _redis.GetServer(Microsoft.Extensions.Configuration.GetConnectionString("MyRedisConStr"));
+                var redisServer = _redis.GetServer("localhost", 6379);
+
+                var keys = redisServer.Keys();
+                listKeys.AddRange(keys.Select(key => (string)key).ToList());
+
+            }
+            catch
+            {
+                //do nothing
+            }
+            return listKeys;
+
+        }
         public bool IsRedisOk()
         {
 

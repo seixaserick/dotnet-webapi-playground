@@ -18,24 +18,34 @@ namespace Services
 
             var jsonObject = JsonSerializer.Serialize(objectToCache, objectToCache.GetType());
             SetCache(cacheKey, jsonObject, cacheSeconds);
-             
+
 
         }
-        public void SetCache(string cacheKey, string? stringToCache, int cacheSeconds)
+        public void SetCache(string cacheKey, string? stringToCache, int cacheSeconds, CommandFlags _flags = CommandFlags.PreferMaster)
         {
-
             try
             {
                 var redisDb = _redis.GetDatabase();
                 var expire = new TimeSpan(0, 0, cacheSeconds);
-                redisDb.StringSet(cacheKey, stringToCache, expire);
+                redisDb.StringSet(cacheKey, stringToCache, expire, When.Always, flags: _flags);
             }
             catch
             {
                 //Do nothing. Just to protect against timeout or redis offline
             }
-
-
+        }
+        public async Task SetCacheAsync(string cacheKey, string? stringToCache, int cacheSeconds , CommandFlags _flags = CommandFlags.PreferMaster)
+        {
+            try
+            {
+                var redisDb = _redis.GetDatabase();
+                var expire = new TimeSpan(0, 0, cacheSeconds);
+                await redisDb.StringSetAsync(cacheKey, stringToCache, expire, When.Always, flags: _flags);
+            }
+            catch
+            {
+                //Do nothing. Just to protect against timeout or redis offline
+            }
         }
         public List<T> GetCachedList<T>(string cacheKey)
         {
@@ -60,7 +70,21 @@ namespace Services
                 return new List<T>(); //return an Empty List if Redis is offline
             }
         }
+        public string? GetCachedString(string cacheKey)
+        {
 
+            try
+            {
+
+                var redisDb = _redis.GetDatabase();
+                var keyValue = redisDb.StringGet(cacheKey).ToString();
+                return keyValue;
+            }
+            catch
+            {
+                return null;
+            }
+        }
 
         public bool IsRedisOk()
         {
@@ -70,19 +94,19 @@ namespace Services
             {
                 var redisDb = _redis.GetDatabase();
                 var pong = redisDb.Ping();
-                
+
                 //response time > 1000 millisec must set redisState = false
                 if (pong.TotalMilliseconds > 1000)
                 {
-                    redisState= false; // if redis is slow, set redisState = false
+                    redisState = false; // if redis is slow, set redisState = false
                 }
             }
             catch
             {
-                redisState=false;
+                redisState = false;
             }
 
-            return redisState; 
+            return redisState;
 
         }
 

@@ -1,5 +1,5 @@
-﻿using StackExchange.Redis;
-using Models;
+﻿using Models;
+using StackExchange.Redis;
 using System.Text.Json;
 
 namespace Services
@@ -34,7 +34,7 @@ namespace Services
                 //Do nothing. Just to protect against timeout or redis offline
             }
         }
-        public async Task SetCacheAsync(string cacheKey, string? stringToCache, int cacheSeconds , CommandFlags _flags = CommandFlags.PreferMaster)
+        public async Task SetCacheAsync(string cacheKey, string? stringToCache, int cacheSeconds, CommandFlags _flags = CommandFlags.PreferMaster)
         {
             try
             {
@@ -85,6 +85,101 @@ namespace Services
                 return null;
             }
         }
+
+
+        public async Task<bool> EnqueueObject(string queueId, RedisQueueItem _job)
+        {
+            try
+            {
+                var redisDb = _redis.GetDatabase();
+                long positionInserted = await redisDb.ListRightPushAsync(queueId, System.Text.Json.JsonSerializer.Serialize(_job));
+                await redisDb.ListGetByIndexAsync(queueId, positionInserted);
+                return true;
+            }
+            catch
+            {
+                //Do nothing. Just to protect against timeout or redis offline
+                return false;
+            }
+        }
+        public async Task<RedisQueueItem> DequeueObject(string queueId)
+        {
+            try
+            {
+                var redisDb = _redis.GetDatabase();
+                // var expire = new TimeSpan(0, 0, cacheSeconds);
+                var obj = await redisDb.ListLeftPopAsync(queueId);
+                if (string.IsNullOrEmpty(obj))
+                {
+                    return null; //nothing in the queue to be dequeued
+                }
+                return JsonSerializer.Deserialize<RedisQueueItem>(obj);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async Task<List<RedisQueueItem>> ReturnAllQueueObjects(string queueId, int maxQty)
+        {
+            var listObjects = new List<RedisQueueItem>();
+
+            try
+            {
+                var redisDb = _redis.GetDatabase();
+                long listCount = await redisDb.ListLengthAsync(queueId);
+                if (listCount > maxQty)
+                {
+                    listCount = maxQty; //to return only the max_qty
+                }
+
+                for (long i = 0; i < listCount; i++)
+                {
+                    var item = await redisDb.ListGetByIndexAsync(queueId, i);
+                    var itemObj = JsonSerializer.Deserialize<RedisQueueItem>(item);
+                    listObjects.Add(itemObj);
+                }
+            }
+            catch
+            {
+                return null;
+            }
+
+            return listObjects;
+
+        }
+
+        public async Task<bool> DeleteQueuedItem(string queueId, long index)
+        {
+
+            try
+            {
+                var redisDb = _redis.GetDatabase();
+                var listCountBeforeDeletion = await redisDb.ListLengthAsync(queueId);
+                if (index > listCountBeforeDeletion - 1) return false; //if index greather than List Length, exit
+
+                //find element by index
+                var listElem = await redisDb.ListGetByIndexAsync(queueId, index);
+                if (listElem == RedisValue.Null) return false; //element index not found
+
+                //remove the element
+                await redisDb.ListRemoveAsync(queueId, listElem);
+
+                //compare list count after deletion
+                var listCountAfterDeletion = await redisDb.ListLengthAsync(queueId);
+
+                //return success
+                return listCountAfterDeletion == listCountBeforeDeletion - 1;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
+
+
 
         public bool IsRedisOk()
         {

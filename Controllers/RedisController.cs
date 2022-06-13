@@ -140,4 +140,98 @@ public class RedisController : ControllerBase
 
     }
 
+    /// <summary>
+    /// Adds a new job object in the queue. (Right push on queue)
+    /// </summary>
+    /// <param name="queue_id"></param>
+    /// <param name="_object"></param>
+    /// <returns></returns>
+    [HttpPost()]
+    [Route("/redis/queues/{queue_id}/enqueue")]
+    public async Task<ActionResult<RedisQueueItem>> PostRedisEnqueue(string queue_id, RedisQueueItem _object)
+    {
+
+
+        bool isRedisOk = _redisService.IsRedisOk();
+        if (!isRedisOk)
+        {
+            return StatusCode(StatusCodes.Status408RequestTimeout, new { Message = "Operation canceled. Redis is responding slowly (timeout) or it is offline." });
+        }
+
+        var result = await _redisService.EnqueueObject(queue_id, _object);
+        if (!result)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, _object);
+        }
+
+        return Ok(_object);
+
+    }
+
+    /// <summary>
+    /// Return the oldest job object in the queue, removing it from queue (Left pop from queue)
+    /// </summary>
+    /// <param name="queue_id"></param>
+    /// <returns></returns>
+    [HttpGet()]
+    [Route("/redis/queues/{queue_id}/dequeue")]
+    public async Task<ActionResult<RedisQueueItem>> GetRedisDequeue(string queue_id)
+    {
+        bool isRedisOk = _redisService.IsRedisOk();
+        if (!isRedisOk)
+        {
+            return StatusCode(StatusCodes.Status408RequestTimeout, new { Message = "Operation canceled. Redis is responding slowly (timeout) or it is offline." });
+        }
+
+        var _object = await _redisService.DequeueObject(queue_id);
+
+        return Ok(_object);
+
+    }
+
+    /// <summary>
+    ///  Return all objects in the queue
+    /// </summary>
+    /// <param name="queue_id"></param>
+    /// <param name="max_qty">Max quantity of returning objects. Default: 50</param>
+    /// <returns></returns>
+    [HttpGet()]
+    [Route("/redis/queues/{queue_id}")]
+    public async Task<ActionResult<List<RedisQueueItem>>> GetRedisReturnAllQueueObjects(string queue_id, [FromQuery] int max_qty = 50)
+    {
+        bool isRedisOk = _redisService.IsRedisOk();
+        if (!isRedisOk)
+        {
+            return StatusCode(StatusCodes.Status408RequestTimeout, new { Message = "Operation canceled. Redis is responding slowly (timeout) or it is offline." });
+        }
+
+        var _objects = await _redisService.ReturnAllQueueObjects(queue_id, max_qty);
+        return Ok(_objects);
+
+    }
+
+
+
+
+    [HttpDelete()]
+    [Route("/redis/queues/{queue_id}/{index}")]
+    public async Task<ActionResult> DeleteRedisQueuedItem(string queue_id, int index)
+    {
+        bool isRedisOk = _redisService.IsRedisOk();
+        if (!isRedisOk)
+        {
+            return StatusCode(StatusCodes.Status408RequestTimeout, new { Message = "Operation canceled. Redis is responding slowly (timeout) or it is offline." });
+        }
+
+        bool _result = await _redisService.DeleteQueuedItem(queue_id, index);
+        if (!_result)
+        {
+            return NotFound();
+
+        }
+
+        return Ok();
+
+    }
+
 }

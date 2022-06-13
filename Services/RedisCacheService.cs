@@ -186,12 +186,16 @@ namespace Services
 
             try
             {
-                //var redisServer = _redis.GetServer(Microsoft.Extensions.Configuration.GetConnectionString("MyRedisConStr"));
-                var redisServer = _redis.GetServer("localhost", 6379);
-
-                var keys = redisServer.Keys();
-                listKeys.AddRange(keys.Select(key => (string)key).ToList());
-
+                System.Net.EndPoint endPoint = _redis.GetEndPoints().First();
+                var redisServer = _redis.GetServer(endPoint);
+                var keys = redisServer.Keys(pattern: "*");
+                int i = 0;
+                foreach (var key in keys)
+                {
+                    if (i >= maxQty) continue;
+                    listKeys.Add(key.ToString());
+                    i++;
+                }
             }
             catch
             {

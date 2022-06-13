@@ -241,7 +241,7 @@ public class RedisController : ControllerBase
     /// <returns></returns>
     [HttpGet()]
     [Route("/redis/queues")]
-    public async Task<ActionResult<List<string>>> GetRedisReturnAllQueues(  [FromQuery] int max_qty = 50)
+    public async Task<ActionResult<List<string>>> GetRedisReturnAllQueues([FromQuery] int max_qty = 1000)
     {
         bool isRedisOk = _redisService.IsRedisOk();
         if (!isRedisOk)
@@ -249,7 +249,7 @@ public class RedisController : ControllerBase
             return StatusCode(StatusCodes.Status408RequestTimeout, new { Message = "Operation canceled. Redis is responding slowly (timeout) or it is offline." });
         }
 
-        var _objects = await _redisService.ReturnAllQueues( max_qty);
+        var _objects = await _redisService.ReturnAllQueues(max_qty);
         return Ok(_objects);
 
     }

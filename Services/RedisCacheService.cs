@@ -87,12 +87,12 @@ namespace Services
         }
 
 
-        public async Task<bool> EnqueueObject(string queueId, RedisQueueItem _job)
+        public async Task<bool> EnqueueObject(string queueId, RedisQueueItem queueItem)
         {
             try
             {
                 var redisDb = _redis.GetDatabase();
-                long positionInserted = await redisDb.ListRightPushAsync(queueId, System.Text.Json.JsonSerializer.Serialize(_job));
+                long positionInserted = await redisDb.ListRightPushAsync(queueId, System.Text.Json.JsonSerializer.Serialize(queueItem));
                 await redisDb.ListGetByIndexAsync(queueId, positionInserted);
                 return true;
             }
